@@ -24,22 +24,28 @@ def calculate_statistics(data):
 
 # Функція для визначення градації якості життя для кожного села
 def calculate_gradation(distance_to_city, up_values):
-    if distance_to_city <= up_values['CITY2_NEAR'] / 3:
+    if distance_to_city <= up_values["CITY2_NEAR"] / 3:
         return 0
-    elif up_values['CITY2_NEAR'] / 3 < distance_to_city <= 2 * up_values['CITY2_NEAR'] / 3:
+    elif (
+        up_values["CITY2_NEAR"] / 3
+        < distance_to_city
+        <= 2 * up_values["CITY2_NEAR"] / 3
+    ):
         return 1
     else:
         return 2
 
 
-def plot_histogram(data, num_bins=70, color='red', edgecolor='black', figsize=(19.2, 10.8)):
+def plot_histogram(
+    data, num_bins=70, color="red", edgecolor="black", figsize=(19.2, 10.8)
+):
     # Створення фігури та осі
     fig, ax = plt.subplots(figsize=figsize)
     # Побудова гістограми
     bars, bins, patches = ax.hist(data, bins=num_bins, color=color, edgecolor=edgecolor)
-    ax.set_xlabel('Distance from village to city (m)')
-    ax.set_ylabel('Frequency')
-    ax.set_title('Distribution of Distance from Village to City. City or Town')
+    ax.set_xlabel("Distance from village to city (m)")
+    ax.set_ylabel("Frequency")
+    ax.set_title("Distribution of Distance from Village to City. City or Town")
     # Додавання ефекту градієнту до барів
     mplcyberpunk.add_bar_gradient(bars=patches)
     plt.show()

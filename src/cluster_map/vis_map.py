@@ -10,6 +10,7 @@ class MapPlotter:
     """
     Class for plotting maps using GeoPandas and Matplotlib.
     """
+
     def __init__(self, file_path: str):
         """
         Initializes the MapPlotter with the file path to the shapefile.
@@ -19,7 +20,12 @@ class MapPlotter:
         """
         self.file_path = file_path
 
-    def plot_map(self, facecolor: str = 'red', edgecolor: str = 'black', figsize: tuple = (19.2, 16.8)):
+    def plot_map(
+        self,
+        facecolor: str = "red",
+        edgecolor: str = "black",
+        figsize: tuple = (19.2, 16.8),
+    ):
         """
         Plots the map with the given facecolor, edgecolor, and figure size.
 
@@ -30,7 +36,9 @@ class MapPlotter:
         """
         try:
             ukraine = gpd.read_file(self.file_path)  # Read shapefile
-            ukraine.plot(facecolor=facecolor, edgecolor=edgecolor, figsize=figsize)  # Plot map
+            ukraine.plot(
+                facecolor=facecolor, edgecolor=edgecolor, figsize=figsize
+            )  # Plot map
             plt.show()  # Show plot
         except Exception as e:
             print(f"An error occurred: {e}")  # Print error message

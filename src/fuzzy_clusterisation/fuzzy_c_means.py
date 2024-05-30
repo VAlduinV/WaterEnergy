@@ -17,9 +17,13 @@ def preprocess_data(selected_data: pd.DataFrame) -> np.ndarray:
     Returns:
         np.ndarray: Scaled data.
     """
-    selected_data = selected_data.copy()  # Make a copy of the DataFrame to avoid SettingWithCopyWarning
+    selected_data = (
+        selected_data.copy()
+    )  # Make a copy of the DataFrame to avoid SettingWithCopyWarning
     selected_data.drop_duplicates(inplace=True)  # Remove duplicates
-    selected_data.fillna(selected_data.mean(), inplace=True)  # Fill missing values with column mean
+    selected_data.fillna(
+        selected_data.mean(), inplace=True
+    )  # Fill missing values with column mean
     scaler = StandardScaler()  # Initialize the StandardScaler
     X = scaler.fit_transform(selected_data)  # Scale the data
     return X
@@ -68,7 +72,7 @@ def plot_data_distribution(selected_data: pd.DataFrame):
     Args:
         selected_data (pd.DataFrame): The data to plot.
     """
-    plt.style.use('ggplot')  # Use ggplot style
+    plt.style.use("ggplot")  # Use ggplot style
     selected_data.plot.box(figsize=(19.2, 16.8))  # Create box plot
     plt.show()  # Show plot
 
@@ -82,14 +86,18 @@ def plot_clusters_fuzzy(X: np.ndarray, labels: np.ndarray, centroids: np.ndarray
         labels (np.ndarray): Cluster labels.
         centroids (np.ndarray): Cluster centroids.
     """
-    colors = ['black', 'green', 'red', 'c', 'm', 'yellow', 'pink', 'violet', 'blue']
+    colors = ["black", "green", "red", "c", "m", "yellow", "pink", "violet", "blue"]
     n_clusters = len(np.unique(labels))  # Number of clusters
     plt.figure(figsize=(19.2, 16.8))  # Create figure
     for i in range(n_clusters):
-        plt.scatter(X[labels == i, 0], X[labels == i, 1], c=colors[i])  # Plot data points
-    plt.scatter(centroids[:, 0], centroids[:, 1], marker='x', s=100, c='#050505')  # Plot centroids
-    plt.xlabel('RD_m1_NEAR')  # Set x-label
-    plt.ylabel('RD_m2_NEAR')  # Set y-label
+        plt.scatter(
+            X[labels == i, 0], X[labels == i, 1], c=colors[i]
+        )  # Plot data points
+    plt.scatter(
+        centroids[:, 0], centroids[:, 1], marker="x", s=100, c="#050505"
+    )  # Plot centroids
+    plt.xlabel("RD_m1_NEAR")  # Set x-label
+    plt.ylabel("RD_m2_NEAR")  # Set y-label
     plt.show()  # Show plot
 
 
@@ -111,9 +119,13 @@ def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list):
         pec = model.partition_entropy_coefficient  # Partition entropy coefficient
         fcm_centers = model.centers  # FCM centers
         fcm_labels = model.predict(X)  # Predict labels
-        axe.scatter(X[:, 0], X[:, 1], c=fcm_labels, alpha=.9)  # Plot data points
-        axe.scatter(fcm_centers[:, 0], fcm_centers[:, 1], marker="+", s=200, c='r')  # Plot centers
-        axe.set_title(f'n_clusters = {n_clusters}, PC = {pc:.3f}, PEC = {pec:.3f}')  # Set title
+        axe.scatter(X[:, 0], X[:, 1], c=fcm_labels, alpha=0.9)  # Plot data points
+        axe.scatter(
+            fcm_centers[:, 0], fcm_centers[:, 1], marker="+", s=200, c="r"
+        )  # Plot centers
+        axe.set_title(
+            f"n_clusters = {n_clusters}, PC = {pc:.3f}, PEC = {pec:.3f}"
+        )  # Set title
     plt.show()  # Show plot
 
 
@@ -124,5 +136,5 @@ def plot_pairplot(results: pd.DataFrame):
     Args:
         results (pd.DataFrame): The data to plot.
     """
-    sns.pairplot(results, hue='Labels', palette='Dark2')  # Create pairplot
+    sns.pairplot(results, hue="Labels", palette="Dark2")  # Create pairplot
     plt.show()  # Show plot
