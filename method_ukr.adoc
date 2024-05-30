@@ -1,0 +1,106 @@
+= SPEC-1: Кластеризація даних селищ
+:sectnums:
+:toc:
+
+== Передумови
+
+Проект спрямований на виконання кластеризації даних селищ, використовуючи різні методи кластеризації, такі як KMeans і Fuzzy C-Means. Метою є аналіз просторових даних сіл і визначення оптимальної кількості кластерів для покращення управління і планування ресурсів.
+
+== Вимоги
+
+*Обов'язково:*
+- Імпорт даних з Excel файлу.
+- Кластеризація даних сіл з використанням KMeans.
+- Візуалізація кластерів і розрахунки коефіцієнта силуету.
+- Візуалізація даних з використанням UMAP і PCA.
+- Вивід результатів розрахунку, включаючи SSE, середні значення силуету і індекси Данна для кожного кластера.
+
+*Бажано:*
+- Застосування методу Fuzzy C-Means для кластеризації.
+- Створення пайплайнів для передобробки даних і кластеризації.
+- Оцінка кластерів з використанням коефіцієнта Данна.
+- Варіант вибору мови: українська, англійська, російська.
+
+*Можливо:*
+- 3D візуалізація кластерів.
+- Логування процесу кластеризації.
+- Табличне представлення даних кластеризації.
+
+*Не буде:*
+- Використання інших методів кластеризації (наприклад, DBSCAN).
+
+== Метод
+
+Проект складається з декількох модулів, які реалізують різні етапи кластеризації даних сіл. Основні кроки включають:
+
+1. Завантаження і передобробка даних.
+2. Кластеризація даних з використанням методу KMeans.
+3. Візуалізація результатів кластеризації.
+4. Оцінка якості кластерів з використанням коефіцієнта силуету і індексу Данна.
+5. Застосування методу Fuzzy C-Means для додаткового аналізу.
+6. Візуалізація кластерів з використанням методів UMAP і PCA.
+
+=== Архітектура
+
+[plantuml, архітектура]
+----
+@startuml
+!define RECTANGLE class
+RECTANGLE main {
+  +load_data()
+  +plot_elbow_curve()
+  +calculate_silhouette_coefficients()
+  +plot_silhouette_coefficients()
+  +perform_clustering()
+  +create_pipelines()
+  +fit_pipeline()
+  +plot_explained_variance()
+  +display_cluster_scatter_plot()
+  +plot_3d_clusters()
+  +evaluate_clusters_and_plot()
+  +apply_pca()
+  +display_cluster_umap()
+}
+
+RECTANGLE k_method_clusterisation {
+  +load_data()
+  +plot_elbow_curve()
+  +calculate_silhouette_coefficients()
+  +plot_silhouette_coefficients()
+  +perform_clustering()
+  +create_pipelines()
+  +fit_pipeline()
+  +plot_explained_variance()
+  +display_cluster_scatter_plot()
+  +plot_3d_clusters()
+  +evaluate_clusters_and_plot()
+  +apply_pca()
+  +display_cluster_umap()
+}
+
+RECTANGLE fuzzy_c_means {
+  +preprocess_data()
+  +perform_fcm_clustering()
+  +plot_clusters_fuzzy()
+  +perform_multiple_fcm_clusterings()
+  +plot_multiple_clusters()
+  +plot_pairplot()
+}
+
+RECTANGLE map {
+  +plot_map()
+}
+
+main --> k_method_clusterisation
+main --> fuzzy_c_means
+main --> map
+@enduml
+----
+
+== Локалізація
+
+Проект підтримує багатомовність для наступних мов:
+- українська
+- англійська
+
+Для вибору мови використовуйте відповідні змінні середовища або аргументи командного рядка при запуску скриптів.

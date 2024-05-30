@@ -1,0 +1,106 @@
+= SPEC-1: Village Data Clustering
+:sectnums:
+:toc:
+
+== Background
+
+The project aims to perform clustering of village data using various clustering methods such as KMeans and Fuzzy C-Means. The goal is to analyze spatial data of villages and determine the optimal number of clusters for improving resource management and planning.
+
+== Requirements
+
+*Must have:*
+- Import data from Excel file.
+- Cluster village data using KMeans.
+- Visualize clusters and calculate silhouette coefficient.
+- Visualize data using UMAP and PCA.
+- Output calculation results, including SSE, average silhouette values, and Dunn indices for each cluster.
+
+*Should have:*
+- Apply the Fuzzy C-Means method for clustering.
+- Create pipelines for data preprocessing and clustering.
+- Evaluate clusters using the Dunn coefficient.
+- Language selection option: Ukrainian, English, Russian.
+
+*Could have:*
+- 3D visualization of clusters.
+- Logging of the clustering process.
+- Tabular representation of clustering data.
+
+*Won't have:*
+- Use of other clustering methods (e.g., DBSCAN).
+
+== Method
+
+The project consists of several modules that implement different stages of village data clustering. The main steps include:
+
+1. Load and preprocess data.
+2. Cluster data using the KMeans method.
+3. Visualize clustering results.
+4. Evaluate cluster quality using the silhouette coefficient and Dunn index.
+5. Apply the Fuzzy C-Means method for additional analysis.
+6. Visualize clusters using UMAP and PCA methods.
+
+=== Architecture
+
+[plantuml, architecture]
+----
+@startuml
+!define RECTANGLE class
+RECTANGLE main {
+  +load_data()
+  +plot_elbow_curve()
+  +calculate_silhouette_coefficients()
+  +plot_silhouette_coefficients()
+  +perform_clustering()
+  +create_pipelines()
+  +fit_pipeline()
+  +plot_explained_variance()
+  +display_cluster_scatter_plot()
+  +plot_3d_clusters()
+  +evaluate_clusters_and_plot()
+  +apply_pca()
+  +display_cluster_umap()
+}
+
+RECTANGLE k_method_clusterisation {
+  +load_data()
+  +plot_elbow_curve()
+  +calculate_silhouette_coefficients()
+  +plot_silhouette_coefficients()
+  +perform_clustering()
+  +create_pipelines()
+  +fit_pipeline()
+  +plot_explained_variance()
+  +display_cluster_scatter_plot()
+  +plot_3d_clusters()
+  +evaluate_clusters_and_plot()
+  +apply_pca()
+  +display_cluster_umap()
+}
+
+RECTANGLE fuzzy_c_means {
+  +preprocess_data()
+  +perform_fcm_clustering()
+  +plot_clusters_fuzzy()
+  +perform_multiple_fcm_clusterings()
+  +plot_multiple_clusters()
+  +plot_pairplot()
+}
+
+RECTANGLE map {
+  +plot_map()
+}
+
+main --> k_method_clusterisation
+main --> fuzzy_c_means
+main --> map
+@enduml
+----
+
+== Localization
+
+The project supports multilingualism for the following languages:
+- ukrainian
+- english
+
+To select a language, use the appropriate environment variables or command line arguments when running the scripts.
