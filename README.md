@@ -21,33 +21,6 @@ This project aims to perform clustering of village data using various clustering
 
 ## Architecture
 
-<style>
-figure {
-  border: thin #c0c0c0 solid;
-  display: flex;
-  flex-flow: column;
-  padding: 5px;
-  max-width: 800px;
-  margin: auto;
-}
-
-img {
-  max-width: 800px;
-  max-height: 600px;
-  border: groove 1em red;
-  border-radius: 25% 5%;
-}
-
-figcaption {
-  background-color: darkred;
-  color: white;
-  font-family: Times, "Times New Roman", Georgia, serif;
-  font-size: 14px;
-  padding: 3px;
-  text-align: center;
-}
-</style>
-
 <figure>
   <img src="/src/templates/img/UML_diagram.png" alt="Architecture project" />
   <figcaption>Architecture project</figcaption>
