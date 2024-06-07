@@ -1,10 +1,11 @@
 # WaterEnergy/fuzzy_clusterisation/fuzzy_c_means.py
-import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from fcmeans import FCM
 import pandas as pd
+from matplotlib import cm
 from sklearn.preprocessing import StandardScaler
+from src.constant import *
 
 
 def preprocess_data(selected_data: pd.DataFrame) -> np.ndarray:
@@ -72,36 +73,12 @@ def plot_data_distribution(selected_data: pd.DataFrame):
     Args:
         selected_data (pd.DataFrame): The data to plot.
     """
-    plt.style.use("ggplot")  # Use ggplot style
-    selected_data.plot.box(figsize=(19.2, 16.8))  # Create box plot
+    # plt.style.use("ggplot")  # Use ggplot style
+    selected_data.plot.box(figsize=FIG_SIZE)  # Create box plot
     plt.show()  # Show plot
 
 
-def plot_clusters_fuzzy(X: np.ndarray, labels: np.ndarray, centroids: np.ndarray):
-    """
-    Plot the fuzzy clusters.
-
-    Args:
-        X (np.ndarray): The data to plot.
-        labels (np.ndarray): Cluster labels.
-        centroids (np.ndarray): Cluster centroids.
-    """
-    colors = ["black", "green", "red", "c", "m", "yellow", "pink", "violet", "blue"]
-    n_clusters = len(np.unique(labels))  # Number of clusters
-    plt.figure(figsize=(19.2, 16.8))  # Create figure
-    for i in range(n_clusters):
-        plt.scatter(
-            X[labels == i, 0], X[labels == i, 1], c=colors[i]
-        )  # Plot data points
-    plt.scatter(
-        centroids[:, 0], centroids[:, 1], marker="x", s=100, c="#050505"
-    )  # Plot centroids
-    plt.xlabel("RD_m1_NEAR")  # Set x-label
-    plt.ylabel("RD_m2_NEAR")  # Set y-label
-    plt.show()  # Show plot
-
-
-def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list):
+def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list, cmap_name='viridis'):
     """
     Plot the fuzzy clusters for multiple numbers of clusters.
 
@@ -109,17 +86,25 @@ def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list):
         X (np.ndarray): The data to plot.
         models (list): List of FCM models.
         n_clusters_list (list): List of numbers of clusters.
+        cmap_name (str): Name of the colormap to use for the clusters.
     """
     num_clusters = len(n_clusters_list)
     rows = int(np.ceil(np.sqrt(num_clusters)))  # Number of rows in the subplot grid
     cols = int(np.ceil(num_clusters / rows))  # Number of columns in the subplot grid
-    f, axes = plt.subplots(rows, cols, figsize=(19.2, 16.8))  # Create subplots
+    f, axes = plt.subplots(rows, cols, figsize=FIG_SIZE)  # Create subplots
+
+    cmap = cm.get_cmap(cmap_name)  # Get the colormap
+
     for n_clusters, model, axe in zip(n_clusters_list, models, axes.ravel()):
         pc = model.partition_coefficient  # Partition coefficient
         pec = model.partition_entropy_coefficient  # Partition entropy coefficient
         fcm_centers = model.centers  # FCM centers
         fcm_labels = model.predict(X)  # Predict labels
-        axe.scatter(X[:, 0], X[:, 1], c=fcm_labels, alpha=0.9)  # Plot data points
+
+        # Normalize the labels to range [0, 1] to use with cmap
+        normalized_labels = (fcm_labels - fcm_labels.min()) / (fcm_labels.max() - fcm_labels.min())
+
+        axe.scatter(X[:, 0], X[:, 1], c=cmap(normalized_labels), alpha=0.9)  # Plot data points
         axe.scatter(
             fcm_centers[:, 0], fcm_centers[:, 1], marker="+", s=200, c="r"
         )  # Plot centers

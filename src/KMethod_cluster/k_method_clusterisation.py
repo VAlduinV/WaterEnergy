@@ -1,22 +1,12 @@
 # WaterEnergy/KMethod_cluster/k_method_clusterisation.py
-import matplotlib.pyplot as plt
 from kneed import KneeLocator
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.pipeline import Pipeline
-from sklearn.decomposition import PCA
 import pandas as pd
-import seaborn as sns
 import numpy as np
-import mplcyberpunk
 import matplotlib.cm as cm  # Import cm for color mapping
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
-from sklearn.metrics import pairwise_distances
-import umap
-
-plt.style.use("cyberpunk")
-fig_size = (13.6, 12.4)
+from src.constant import *
 
 
 def load_data(file_path: str, columns: list) -> tuple:
@@ -59,7 +49,7 @@ def plot_elbow_curve(
         kmeans.fit(scaled_features)  # Fit KMeans
         sse.append(kmeans.inertia_)  # Append SSE to list
 
-    plt.figure(figsize=fig_size)  # Create figure
+    plt.figure(figsize=FIG_SIZE)  # Create figure
     (first_line,) = plt.plot(
         range(1, n_clusters + 1),
         sse,
@@ -110,11 +100,11 @@ def plot_elbow_curve(
         edgecolor="red",
     )  # Add legend
     plt.setp(legend.get_title(), color="black")  # Set legend title color
-    plt.savefig("./data/data_photo/elbow_curve.pdf")  # Save figure
+    plt.savefig("./src/data/data_photo/elbow_curve.pdf")  # Save figure
     plt.show()  # Show plot
 
-    print(f"Optimal number of clusters according to the elbow method: {kl.elbow}")
-    print(f"SSE for each k: {sse}")
+    print(f"Optimal number of clusters according to the elbow method: {kl.elbow}\n")
+    print(f"SSE for each k: {sse}\n")
 
     return kl.elbow
 
@@ -146,8 +136,8 @@ def calculate_silhouette_coefficients(
         np.argmax(silhouette_coefficients) + 2
     )  # Find the optimal number of clusters
 
-    print(f"Silhouette coefficients for each k: {silhouette_coefficients}")
-    print(f"Optimal number of clusters according to silhouette method: {optimal_k}")
+    print(f"Silhouette coefficients for each k: {silhouette_coefficients}\n")
+    print(f"Optimal number of clusters according to silhouette method: {optimal_k}\n")
 
     return silhouette_coefficients, optimal_k
 
@@ -163,7 +153,7 @@ def plot_silhouette_coefficients(
         optimal_k (int): Optimal number of clusters.
         n_clusters (int): Maximum number of clusters evaluated.
     """
-    plt.figure(figsize=fig_size)  # Create figure
+    plt.figure(figsize=FIG_SIZE)  # Create figure
     (first_line,) = plt.plot(
         range(2, n_clusters + 1),
         silhouette_coefficients,
@@ -203,7 +193,7 @@ def plot_silhouette_coefficients(
         edgecolor="red",
     )  # Add legend
     plt.setp(legend.get_title(), color="black")  # Set legend title color
-    plt.savefig("./data/data_photo/silhouette_coefficients.pdf")  # Save figure
+    plt.savefig("./src/data/data_photo/silhouette_coefficients.pdf")  # Save figure
     plt.show()  # Show plot
 
 
@@ -225,7 +215,7 @@ def plot_silhouette(ax, n_clusters: int, selected_data: pd.DataFrame):
         selected_data, cluster_labels
     )  # Calculate silhouette values for each sample
 
-    print(f"Average silhouette score for n_clusters = {n_clusters}: {silhouette_avg}")
+    print(f"Average silhouette score for n_clusters = {n_clusters}: {silhouette_avg}\n")
 
     y_lower = 10  # Initialize y_lower for silhouette plot
     for i in range(n_clusters):
@@ -291,6 +281,7 @@ def perform_clustering(
             fontsize=14,
             fontweight="bold",
         )  # Set supertitle
+        plt.tight_layout()  # Adjust subplot layout
         plt.show()  # Show plot
 
     return silhouette_avgs
@@ -304,7 +295,7 @@ def perform_clustering_ing(range_n_clusters, selected_data):
         range_n_clusters (list): List of integers representing the number of clusters to analyze.
         selected_data (pd.DataFrame): Data used for clustering.
     """
-    fig, axes = plt.subplots(2, 2, figsize=fig_size)  # Create 2x2 subplots
+    fig, axes = plt.subplots(2, 2, figsize=FIG_SIZE)  # Create 2x2 subplots
 
     silhouette_avgs = []
     for idx, n_clusters in enumerate(range_n_clusters):
@@ -315,257 +306,38 @@ def perform_clustering_ing(range_n_clusters, selected_data):
         silhouette_avgs.append(silhouette_avg)
 
     plt.tight_layout()  # Adjust subplot layout
-    plt.savefig("./data/data_photo/plot_silhouette.pdf")  # Save figure
+    plt.savefig("./src/data/data_photo/plot_silhouette.pdf")  # Save figure
     plt.show()  # Show plot
 
-    print(f"Average silhouette scores: {silhouette_avgs}")
+    print(f"Average silhouette scores: {silhouette_avgs}\n")
     return silhouette_avgs
 
 
-def dunn_index(X: np.ndarray, labels: np.ndarray) -> float:
+# Новая функция для отображения 9 графиков на одном листе
+def plot_multiple_silhouettes(range_n_clusters: list, selected_data: pd.DataFrame):
     """
-    Calculates the Dunn index for the given cluster labels.
+    Plots multiple silhouette analyses on a single figure.
 
     Args:
-        X (np.ndarray): Data points.
-        labels (np.ndarray): Cluster labels.
-
-    Returns:
-        float: Dunn index value.
+        range_n_clusters (list): List of integers representing the number of clusters to analyze.
+        selected_data (pd.DataFrame): The data on which to perform clustering.
     """
-    distances = pairwise_distances(X)  # Calculate pairwise distances
-    unique_clusters = np.unique(labels)  # Get unique clusters
+    fig, axes = plt.subplots(3, 3, figsize=FIG_SIZE)  # Создаем фигуру с сеткой 3x3
+    axes = axes.flatten()  # Разворачиваем массив осей для удобства итерации
 
-    min_intercluster = np.inf  # Initialize minimum intercluster distance
-    max_intracluster = 0  # Initialize maximum intracluster distance
+    for idx, n_clusters in enumerate(range_n_clusters):
+        ax = axes[idx]
+        ax.set_xlim([-0.1, 1])
+        ax.set_ylim([0, len(selected_data) + (n_clusters + 1) * 10])
+        plot_silhouette(ax, n_clusters, selected_data)
+        ax.set_title(f"n_clusters = {n_clusters}")
 
-    for i in unique_clusters:
-        for j in unique_clusters:
-            if i != j:
-                intercluster_distances = distances[labels == i, :][
-                    :, labels == j
-                ]  # Calculate intercluster distances
-                if intercluster_distances.size > 0:
-                    min_intercluster = min(
-                        min_intercluster, np.min(intercluster_distances)
-                    )  # Update minimum intercluster distance
+    # Удаляем лишние оси
+    for j in range(len(range_n_clusters), len(axes)):
+        fig.delaxes(axes[j])
 
-        intracluster_distances = distances[labels == i, :][
-            :, labels == i
-        ]  # Calculate intracluster distances
-        if intracluster_distances.size > 0:
-            max_intracluster = max(
-                max_intracluster, np.max(intracluster_distances)
-            )  # Update maximum intracluster distance
-
-    if max_intracluster == 0:
-        return 0  # To avoid division by zero
-
-    return min_intercluster / max_intracluster  # Return Dunn index
-
-
-def evaluate_clusters_and_plot(X: pd.DataFrame, max_clusters: int):
-    """
-    Evaluates clustering for a range of cluster numbers and plots Dunn Index.
-
-    Args:
-        X (pd.DataFrame): Data points.
-        max_clusters (int): Maximum number of clusters to evaluate.
-
-    Returns:
-        list: Dunn index values for each number of clusters.
-    """
-    dunn_scores = []
-    for k in range(2, max_clusters + 1):
-        kmeans = KMeans(n_clusters=k)  # Initialize KMeans
-        labels = kmeans.fit_predict(X)  # Predict cluster labels
-        dunn_score = dunn_index(X, labels)  # Calculate Dunn index
-        dunn_scores.append(dunn_score)  # Append Dunn index to list
-        print(f"Dunn Index for k={k}: {dunn_score}")
-
-    plt.figure(figsize=fig_size)  # Create figure
-    plt.plot(
-        range(2, max_clusters + 1),
-        dunn_scores,
-        "o-",
-        color="red",
-        linewidth=4,
-        markersize=12,
-        markeredgewidth=4,
-        markerfacecolor="pink",
-        markeredgecolor="darkgreen",
-        label="Dunn Index per Cluster",
-    )  # Plot Dunn index
-    plt.xlabel("Number of Clusters")  # Set x-label
-    plt.ylabel("Dunn Index")  # Set y-label
-    plt.title("Dunn Index for Various Numbers of Clusters")  # Set title
-    plt.legend(
-        title="Optimization of Smart-Villages Clusters via Dunn Index",
-        title_fontsize=14,
-        prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
-        loc="upper right",
-        shadow=True,
-        frameon=True,
-        fancybox=True,
-        framealpha=0.8,
-        facecolor="darkgrey",
-        edgecolor="yellow",
-    )  # Add legend
-    mplcyberpunk.add_glow_effects()  # Add glow effects
-    plt.grid(True)  # Show grid
-    plt.show()  # Show plot
-
-    return dunn_scores
-
-
-def create_pipelines(n_clusters=2) -> tuple:
-    """
-    Create preprocessing and clustering pipelines.
-
-    Args:
-        n_clusters (int): Number of clusters to use in KMeans.
-
-    Returns:
-        tuple: Returns preprocessing, clustering, and combined pipelines.
-    """
-    preprocessor = Pipeline(
-        [
-            ("scaler", MinMaxScaler()),  # Add MinMaxScaler to pipeline
-            ("pca", PCA(n_components=2, random_state=42)),  # Add PCA to pipeline
-        ]
-    )
-
-    clusterer = Pipeline(
-        [
-            (
-                "kmeans",
-                KMeans(
-                    n_clusters=n_clusters,
-                    init="k-means++",
-                    n_init=100,
-                    max_iter=1000,
-                    random_state=42,
-                ),
-            ),  # Add KMeans to pipeline
-        ]
-    )
-
-    combined_pipeline = Pipeline(
-        [
-            ("preprocessor", preprocessor),  # Add preprocessor to pipeline
-            ("clusterer", clusterer),  # Add clusterer to pipeline
-        ]
-    )
-
-    return preprocessor, clusterer, combined_pipeline  # Return pipelines
-
-
-def fit_pipeline(pipeline: Pipeline, data: pd.DataFrame) -> tuple:
-    """
-    Fit the pipeline to the data and extract results.
-
-    Args:
-        pipeline (Pipeline): The combined preprocessing and clustering pipeline.
-        data (pd.DataFrame): The data to cluster.
-
-    Returns:
-        tuple: DataFrame with principal components, cluster assignments, and centroids.
-    """
-    pipeline.fit(data)  # Fit pipeline
-    preprocessed_data = pipeline["preprocessor"].transform(
-        data
-    )  # Transform data using preprocessor
-    predicted_labels = pipeline["clusterer"]["kmeans"].labels_  # Get predicted labels
-    centroids = pipeline["clusterer"]["kmeans"].cluster_centers_  # Get cluster centers
-    silhouette_avg = silhouette_score(
-        preprocessed_data, predicted_labels
-    )  # Calculate silhouette score
-
-    print(f"Silhouette Score: {silhouette_avg}")
-    print(f"Centroids of the clusters: {centroids}")
-
-    pcadf = pd.DataFrame(
-        preprocessed_data, columns=["component_1", "component_2"]
-    )  # Create DataFrame for PCA components
-    pcadf["predicted_cluster"] = predicted_labels  # Add predicted clusters to DataFrame
-
-    return pcadf, centroids  # Return DataFrame and centroids
-
-
-def display_cluster_scatter_plot(data: pd.DataFrame, centroids: np.ndarray):
-    """
-    Plot the clustered data.
-
-    Args:
-        data (pd.DataFrame): The DataFrame containing the principal components and cluster assignments.
-        centroids (np.ndarray): Cluster centroids.
-    """
-    plt.figure(figsize=fig_size)  # Create figure
-    scatter = sns.scatterplot(
-        x="component_1",
-        y="component_2",
-        s=50,
-        data=data,
-        hue="predicted_cluster",
-        palette="Set2",
-        legend="full",
-    )  # Create scatter plot
-    plt.scatter(
-        centroids[:, 0], centroids[:, 1], s=200, c="red", label="Centroids", marker="X"
-    )  # Plot centroids
-    scatter.set_title("Results of clustering of Smart-Villages data")  # Set title
-    legend = plt.legend(
-        loc="upper right",
-        borderaxespad=0.0,
-        title="Cluster IDs",
-        title_fontsize=14,
-        prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
-        labelcolor="white",
-        shadow=True,
-        frameon=True,
-        fancybox=True,
-        framealpha=0.8,
-        facecolor="darkgrey",
-        edgecolor="red",
-    )  # Add legend
-    plt.setp(legend.get_title(), color="white")  # Set legend title color
-    plt.show()  # Show plot
-
-
-def plot_explained_variance(data: pd.DataFrame):
-    """
-    Plot the cumulative explained variance by the PCA.
-
-    Args:
-        data (pd.DataFrame): The original dataset.
-    """
-    pca = PCA().fit(data)  # Fit PCA
-    explained_variance = pca.explained_variance_ratio_  # Get explained variance ratio
-    cumulative_variance = np.cumsum(
-        explained_variance
-    )  # Calculate cumulative explained variance
-
-    plt.figure(figsize=(16.8, 14.4))  # Create figure
-    (line,) = plt.plot(
-        cumulative_variance, label="Cumulative Explained Variance", color="green"
-    )  # Plot cumulative explained variance
-    plt.xlabel("Number of Components")  # Set x-label
-    plt.ylabel("Cumulative Explained Variance")  # Set y-label
-    legend = plt.legend(
-        handles=[line],
-        loc="best",
-        prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
-        labelcolor="white",
-        shadow=True,
-        frameon=True,
-        fancybox=True,
-        framealpha=0.8,
-        facecolor="darkgrey",
-        edgecolor="red",
-    )  # Add legend
-    plt.setp(legend.get_title(), color="white")  # Set legend title color
-    mplcyberpunk.add_glow_effects()  # Add glow effects
-    plt.show()  # Show plot
+    plt.tight_layout()  # Настраиваем расположение подзаголовков
+    plt.show()  # Показываем фигуру
 
 
 def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
@@ -586,7 +358,7 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         (3, 4, 5),
         (6, 7, 8),
     ]  # Define feature combinations for subplots
-    fig = plt.figure(figsize=(19.2, 16.8))  # Create figure
+    fig = plt.figure(figsize=FIG_SIZE)  # Create figure
 
     for i, (x, y, z) in enumerate(combinations, start=1):
         ax = fig.add_subplot(1, 3, i, projection="3d")  # Create 3D subplot
@@ -634,75 +406,4 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         sc, ax=fig.axes, orientation="horizontal", shrink=0.8, pad=0.15
     )  # Add colorbar
     cbar.set_label("Cluster Label")  # Set colorbar label
-    plt.show()  # Show plot
-
-
-def apply_pca(scaled_data: np.ndarray, n_components: int = 2) -> np.ndarray:
-    """
-    Apply PCA to reduce the dimensionality of pre-scaled data.
-
-    Args:
-        scaled_data (np.ndarray): Pre-scaled data matrix.
-        n_components (int): Number of principal components to return.
-
-    Returns:
-        np.ndarray: Data transformed into principal components.
-    """
-    pca = PCA(n_components=n_components)  # Initialize PCA
-    principal_components = pca.fit_transform(scaled_data)  # Transform data using PCA
-    return principal_components  # Return principal components
-
-
-def display_cluster_umap(
-    data: np.ndarray,
-    predicted_clusters: np.ndarray,
-    n_neighbors=15,
-    min_dist=0.1,
-    n_components=2,
-):
-    """
-    Apply UMAP dimensionality reduction on high-dimensional data and plot the results.
-
-    Args:
-        data (np.ndarray): High-dimensional data to be reduced.
-        predicted_clusters (np.ndarray): Cluster labels for each point in data.
-        n_neighbors (int): The size of local neighborhood used for manifold approximation.
-        min_dist (float): The minimum distance apart that points are allowed to be in the low-dimensional representation.
-        n_components (int): The number of dimensions to reduce to.
-
-    Displays:
-        Scatter plot of the data reduced to two dimensions.
-    """
-    reducer = umap.UMAP(
-        n_neighbors=n_neighbors,
-        min_dist=min_dist,
-        n_components=n_components,
-        random_state=42,
-    )  # Initialize UMAP
-    embedding = reducer.fit_transform(data)  # Transform data using UMAP
-
-    plt.figure(figsize=fig_size)  # Create figure
-    scatter = sns.scatterplot(
-        x=embedding[:, 0],
-        y=embedding[:, 1],
-        hue=predicted_clusters,
-        palette=sns.color_palette("hsv", len(set(predicted_clusters))),
-        s=50,
-        alpha=0.6,
-        edgecolor="w",
-    )  # Create scatter plot
-    scatter.set_title("UMAP Projection of the Clustered Data")  # Set title
-    legend = plt.legend(
-        loc="best",
-        title="Cluster ID",
-        prop={"family": "Times New Roman", "size": 12, "weight": "bold"},
-        labelcolor="white",
-        shadow=True,
-        frameon=True,
-        fancybox=True,
-        framealpha=0.8,
-        facecolor="darkgrey",
-        edgecolor="red",
-    )  # Add legend
-    plt.setp(legend.get_title(), color="white")  # Set legend title color
     plt.show()  # Show plot
