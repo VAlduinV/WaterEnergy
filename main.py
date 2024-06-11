@@ -17,6 +17,7 @@ from src.fuzzy_clusterisation.fuzzy_c_means import (
     plot_pairplot,
     plot_data_distribution,
 )
+from src.io.output_table import display_village_clusters
 
 from src.pca_method.pca_cluster import (create_pipelines,
                                         fit_pipeline,
@@ -26,9 +27,7 @@ from src.pca_method.pca_cluster import (create_pipelines,
 from src.calc_dunn.calc_dunn_index import evaluate_clusters_and_plot
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from prettytable import PrettyTable
 import logging
-
 from src.umap_method.umap_cluster import display_cluster_umap
 
 logging.basicConfig(
@@ -36,28 +35,11 @@ logging.basicConfig(
 )  # Configure logging
 
 
-def display_village_clusters(data, labels):
-    """
-        Display the village names and their corresponding cluster labels in a table.
-
-        Args:
-            data (pd.DataFrame): The data containing the village names.
-            labels (np.ndarray): Array of cluster labels corresponding to each row in data.
-        """
-    table = PrettyTable()  # Initialize PrettyTable
-    table.field_names = ["Village Name", "Cluster"]  # Set table field names
-    for name, label in zip(
-            data["admin4Na_1"].head(20), labels[:20]
-    ):  # Iterate over first 20 entries
-        table.add_row([name, label])  # Add row to table
-    print(table)  # Print table
-
-
 def main():
     """
         Main function to load data, perform clustering, and visualize results.
-        """
-    file_path = r"src/data\VILLAGE.xlsx"
+    """
+    file_path = r"src/data/VILLAGE_ok_Dist2_coord-.xlsx"
     selected_columns = [
         "RD_m1_NEAR",
         "RD_m2_NEAR",
@@ -69,18 +51,20 @@ def main():
         "occup_NEAR",
         "power_NEAR",
     ]
-    df, selected_data = load_data(file_path, selected_columns)  # Load data
-    df_df, selected_data_df = load_data(
-        file_path, selected_columns + ["admin4Na_1"]
-    )  # Load data with village names
+    df, selected_data = load_data(file_path, selected_columns + ["admin4Na_1"])  # Load data
 
     kmeans = KMeans(n_clusters=9, random_state=42)  # Initialize KMeans
     cluster_labels = kmeans.fit_predict(
-        selected_data_df.drop(["admin4Na_1"], axis=1)
+        selected_data.drop(["admin4Na_1"], axis=1)
     )  # Predict clusters
     print(f'Cluster labels: {cluster_labels}')
+
+    # Добавить столбец с метками кластеров в DataFrame
+    df['cluster_label'] = cluster_labels
+    df.to_excel(file_path, index=False)
+
     display_village_clusters(
-        selected_data_df, cluster_labels
+        selected_data, cluster_labels
     )  # Display village clusters
 
     logging.info(f"Obtained data:\n {df.head()}")  # Log data
@@ -113,7 +97,7 @@ def main():
     range_n_clusters = [2, 3, 4, 5, 6, 7, 8, 9]
     markers = ["o", "s", "^", "p", "*", "d", "v", "<", ">"]
     perform_clustering(
-        range_n_clusters, selected_data, markers
+        range_n_clusters, selected_data.drop(["admin4Na_1"], axis=1), markers
     )  # Perform clustering
     perform_clustering_ing(
         [3, 4, 6, 9], selected_data

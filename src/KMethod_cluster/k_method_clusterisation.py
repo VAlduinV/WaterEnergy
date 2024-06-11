@@ -2,8 +2,6 @@
 from kneed import KneeLocator
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
-import pandas as pd
-import numpy as np
 import matplotlib.cm as cm  # Import cm for color mapping
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
 from src.constant import *

@@ -1,8 +1,6 @@
-import numpy as np
 import umap
-from matplotlib import pyplot as plt
 import seaborn as sns
-from src.constant import FIG_SIZE
+from src.constant import *
 
 
 def display_cluster_umap(
