@@ -160,5 +160,4 @@ cython_debug/
 #.idea/
 
 # Data
-data/
-/src/data/map_data/
+/src/data/
