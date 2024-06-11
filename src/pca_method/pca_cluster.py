@@ -1,12 +1,12 @@
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, silhouette_samples
+from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 import pandas as pd
 import seaborn as sns
 import numpy as np
-from src.constant import *
+from src.CONSTANT.constant import *
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
 
 

@@ -5,7 +5,7 @@ from fcmeans import FCM
 import pandas as pd
 from matplotlib import cm
 from sklearn.preprocessing import StandardScaler
-from src.constant import *
+from src.CONSTANT.constant import *
 
 
 def preprocess_data(selected_data: pd.DataFrame) -> np.ndarray:

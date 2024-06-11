@@ -1,6 +1,6 @@
 import umap
 import seaborn as sns
-from src.constant import *
+from src.CONSTANT.constant import *
 
 
 def display_cluster_umap(

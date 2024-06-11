@@ -4,7 +4,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
 import matplotlib.cm as cm  # Import cm for color mapping
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
-from src.constant import *
+from src.CONSTANT.constant import *
 
 
 def load_data(file_path: str, columns: list) -> tuple:

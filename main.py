@@ -17,6 +17,7 @@ from src.fuzzy_clusterisation.fuzzy_c_means import (
     plot_pairplot,
     plot_data_distribution,
 )
+
 from src.io.output_table import display_village_clusters
 
 from src.pca_method.pca_cluster import (create_pipelines,
