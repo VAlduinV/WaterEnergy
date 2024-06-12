@@ -2,7 +2,7 @@
 from kneed import KneeLocator
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
-import matplotlib.cm as cm  # Import cm for color mapping
+import matplotlib.cm as cm
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
 from src.CONSTANT.constant import *
 
@@ -23,12 +23,7 @@ def load_data(file_path: str, columns: list) -> tuple:
     return df, selected_data
 
 
-def plot_elbow_curve(
-    features: pd.DataFrame,
-    kmeans_kwargs: dict,
-    n_clusters: int,
-    scaled_features: np.ndarray,
-):
+def plot_elbow_curve(features: pd.DataFrame, kmeans_kwargs: dict, n_clusters: int, scaled_features: np.ndarray) -> int:
     """
     Plots the elbow curve to determine the optimal number of clusters.
 
@@ -107,9 +102,7 @@ def plot_elbow_curve(
     return kl.elbow
 
 
-def calculate_silhouette_coefficients(
-    scaled_features: np.ndarray, kmeans_kwargs: dict, n_clusters: int
-) -> tuple:
+def calculate_silhouette_coefficients(scaled_features: np.ndarray, kmeans_kwargs: dict, n_clusters: int) -> tuple:
     """
     Calculates the silhouette coefficients for a range of cluster numbers.
 
@@ -131,7 +124,7 @@ def calculate_silhouette_coefficients(
         silhouette_coefficients.append(score)  # Append score to list
 
     optimal_k = (
-        np.argmax(silhouette_coefficients) + 2
+            np.argmax(silhouette_coefficients) + 2
     )  # Find the optimal number of clusters
 
     print(f"Silhouette coefficients for each k: {silhouette_coefficients}\n")
@@ -140,9 +133,7 @@ def calculate_silhouette_coefficients(
     return silhouette_coefficients, optimal_k
 
 
-def plot_silhouette_coefficients(
-    silhouette_coefficients: list, optimal_k: int, n_clusters: int
-):
+def plot_silhouette_coefficients(silhouette_coefficients: list, optimal_k: int, n_clusters: int):
     """
     Plots the silhouette coefficients for a range of cluster numbers.
 
@@ -233,7 +224,7 @@ def plot_silhouette(ax, n_clusters: int, selected_data: pd.DataFrame):
             alpha=0.7,
         )
         ax.text(
-            -0.05, y_lower + 0.5 * size_cluster_i, str(i)
+            -0.05, y_lower + 0.5 * size_cluster_i, str(i + 1)  # Use i + 1 to start from 1
         )  # Add text label for cluster i
         y_lower = y_upper + 10  # Update y_lower for next cluster
 
@@ -247,9 +238,7 @@ def plot_silhouette(ax, n_clusters: int, selected_data: pd.DataFrame):
     return silhouette_avg
 
 
-def perform_clustering(
-    range_n_clusters: list, selected_data: pd.DataFrame, markers: list
-):
+def perform_clustering(range_n_clusters: list, selected_data: pd.DataFrame, markers: list):
     """
     Performs clustering analysis and visualization for a range of cluster counts.
 
@@ -311,7 +300,6 @@ def perform_clustering_ing(range_n_clusters, selected_data):
     return silhouette_avgs
 
 
-# Новая функция для отображения 9 графиков на одном листе
 def plot_multiple_silhouettes(range_n_clusters: list, selected_data: pd.DataFrame):
     """
     Plots multiple silhouette analyses on a single figure.
@@ -349,28 +337,31 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
     """
     kmeans = KMeans(n_clusters=n_clusters)  # Initialize KMeans
     kmeans.fit(X)  # Fit KMeans
-    labels = kmeans.labels_  # Get cluster labels
+    labels = kmeans.labels_ + 1  # Get cluster labels and start from 1
 
     combinations = [
         (0, 1, 2),
         (3, 4, 5),
         (6, 7, 8),
     ]  # Define feature combinations for subplots
-    fig = plt.figure(figsize=FIG_SIZE)  # Create figure
+    fig = plt.figure(figsize=(20, 10))  # Create figure with larger size
+
+    cmap = plt.cm.get_cmap('jet', n_clusters)  # Get colormap
 
     for i, (x, y, z) in enumerate(combinations, start=1):
         ax = fig.add_subplot(1, 3, i, projection="3d")  # Create 3D subplot
         sc = ax.scatter(
-            X[:, x], X[:, y], X[:, z], c=labels.astype(float), cmap="jet", edgecolor="k"
+            X[:, x], X[:, y], X[:, z], c=labels, cmap=cmap, edgecolor="k"
         )  # Plot data points
-        ax.set_xlabel(selected_columns[x])  # Set x-label
-        ax.set_ylabel(selected_columns[y])  # Set y-label
-        ax.set_zlabel(selected_columns[z])  # Set z-label
+        ax.set_xlabel(selected_columns[x], fontsize=12)  # Set x-label
+        ax.set_ylabel(selected_columns[y], fontsize=12)  # Set y-label
+        ax.set_zlabel(selected_columns[z], fontsize=12)  # Set z-label
         ax.set_title(
-            f"Clusters {n_clusters} using {selected_columns[x]}, {selected_columns[y]}, {selected_columns[z]}"
+            f"Clusters {n_clusters} using {selected_columns[x]}, {selected_columns[y]}, {selected_columns[z]}",
+            fontsize=14
         )  # Set title
 
-    colors = [sc.cmap(sc.norm(i)) for i in range(n_clusters)]  # Get colors for clusters
+    colors = [cmap(i) for i in range(n_clusters)]  # Get colors for clusters
     legend_labels = [
         f"Cluster {i + 1}" for i in range(n_clusters)
     ]  # Get labels for clusters
@@ -388,20 +379,19 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
     ]  # Create legend patches
     legend = plt.legend(
         handles=patches,
-        bbox_to_anchor=(0.5, 0.5),
-        loc="best",
-        prop={"family": "Times New Roman", "size": 12, "weight": "bold"},
-        labelcolor="white",
+        bbox_to_anchor=(1.05, 1),
+        loc="upper left",
+        prop={"size": 10},
         shadow=True,
         frameon=True,
         fancybox=True,
         framealpha=0.8,
-        facecolor="darkgrey",
-        edgecolor="red",
+        facecolor="lightgrey",
+        edgecolor="black",
     )  # Add legend
-    plt.setp(legend.get_title(), color="white")  # Set legend title color
+    plt.setp(legend.get_title(), fontsize=12)  # Set legend title font size
     cbar = fig.colorbar(
         sc, ax=fig.axes, orientation="horizontal", shrink=0.8, pad=0.15
     )  # Add colorbar
-    cbar.set_label("Cluster Label")  # Set colorbar label
+    cbar.set_label("Cluster Label", fontsize=12)  # Set colorbar label
     plt.show()  # Show plot

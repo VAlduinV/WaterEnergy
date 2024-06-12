@@ -3,9 +3,7 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
-import pandas as pd
 import seaborn as sns
-import numpy as np
 from src.CONSTANT.constant import *
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
 
@@ -64,14 +62,10 @@ def fit_pipeline(pipeline: Pipeline, data: pd.DataFrame) -> tuple:
         tuple: DataFrame with principal components, cluster assignments, and centroids.
     """
     pipeline.fit(data)  # Fit pipeline
-    preprocessed_data = pipeline["preprocessor"].transform(
-        data
-    )  # Transform data using preprocessor
-    predicted_labels = pipeline["clusterer"]["kmeans"].labels_  # Get predicted labels
+    preprocessed_data = pipeline["preprocessor"].transform(data)  # Transform data using preprocessor
+    predicted_labels = pipeline["clusterer"]["kmeans"].labels_ + 1  # Get predicted labels and start from 1
     centroids = pipeline["clusterer"]["kmeans"].cluster_centers_  # Get cluster centers
-    silhouette_avg = silhouette_score(
-        preprocessed_data, predicted_labels
-    )  # Calculate silhouette score
+    silhouette_avg = silhouette_score(preprocessed_data, predicted_labels - 1)  # Calculate silhouette score
 
     print(f"Silhouette Score: {silhouette_avg}")
     print(f"Centroids of the clusters: {centroids}")
@@ -133,16 +127,16 @@ def plot_explained_variance(data: pd.DataFrame):
     """
     pca = PCA().fit(data)  # Fit PCA
     explained_variance = pca.explained_variance_ratio_  # Get explained variance ratio
-    cumulative_variance = np.cumsum(
-        explained_variance
-    )  # Calculate cumulative explained variance
+    cumulative_variance = np.cumsum(explained_variance)  # Calculate cumulative explained variance
 
     plt.figure(figsize=FIG_SIZE)  # Create figure
     (line,) = plt.plot(
-        cumulative_variance, label="Cumulative Explained Variance", color="green"
+        range(1, len(cumulative_variance) + 1), cumulative_variance, label="Cumulative Explained Variance",
+        color="green"
     )  # Plot cumulative explained variance
     plt.xlabel("Number of Components")  # Set x-label
     plt.ylabel("Cumulative Explained Variance")  # Set y-label
+    plt.xticks(range(1, len(cumulative_variance) + 1))  # Set x-ticks to start from 1
     legend = plt.legend(
         handles=[line],
         loc="best",

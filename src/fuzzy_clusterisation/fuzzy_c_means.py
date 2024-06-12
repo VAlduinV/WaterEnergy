@@ -1,8 +1,5 @@
-# WaterEnergy/fuzzy_clusterisation/fuzzy_c_means.py
 import seaborn as sns
-import numpy as np
 from fcmeans import FCM
-import pandas as pd
 from matplotlib import cm
 from sklearn.preprocessing import StandardScaler
 from src.CONSTANT.constant import *
@@ -18,13 +15,9 @@ def preprocess_data(selected_data: pd.DataFrame) -> np.ndarray:
     Returns:
         np.ndarray: Scaled data.
     """
-    selected_data = (
-        selected_data.copy()
-    )  # Make a copy of the DataFrame to avoid SettingWithCopyWarning
+    selected_data = selected_data.copy()  # Make a copy of the DataFrame to avoid SettingWithCopyWarning
     selected_data.drop_duplicates(inplace=True)  # Remove duplicates
-    selected_data.fillna(
-        selected_data.mean(), inplace=True
-    )  # Fill missing values with column mean
+    selected_data.fillna(selected_data.mean(), inplace=True)  # Fill missing values with column mean
     scaler = StandardScaler()  # Initialize the StandardScaler
     X = scaler.fit_transform(selected_data)  # Scale the data
     return X
@@ -43,7 +36,7 @@ def perform_fcm_clustering(X: np.ndarray, n_clusters: int) -> tuple:
     """
     fcm = FCM(n_clusters=n_clusters, max_iter=1000, random_state=42)  # Initialize FCM
     fcm.fit(X)  # Fit FCM
-    labels = fcm.predict(X)  # Predict cluster labels
+    labels = fcm.predict(X) + 1  # Predict cluster labels and start from 1
     return fcm, labels
 
 
@@ -60,7 +53,7 @@ def perform_multiple_fcm_clusterings(X: np.ndarray, n_clusters_list: list) -> li
     """
     models = []
     for n_clusters in n_clusters_list:
-        fcm = FCM(n_clusters=n_clusters)  # Initialize FCM
+        fcm = FCM(n_clusters=n_clusters, max_iter=1000, random_state=42)  # Initialize FCM
         fcm.fit(X)  # Fit FCM
         models.append(fcm)  # Append model to list
     return models
@@ -73,12 +66,12 @@ def plot_data_distribution(selected_data: pd.DataFrame):
     Args:
         selected_data (pd.DataFrame): The data to plot.
     """
-    # plt.style.use("ggplot")  # Use ggplot style
-    selected_data.plot.box(figsize=FIG_SIZE)  # Create box plot
+    ax = selected_data.plot.box(figsize=FIG_SIZE)  # Create box plot
+    ax.set_ylabel("Distance (in metres)")  # Set y-axis label using the axis object
     plt.show()  # Show plot
 
 
-def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list, cmap_name='viridis'):
+def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list, cmap_name='rainbow'):
     """
     Plot the fuzzy clusters for multiple numbers of clusters.
 
@@ -91,7 +84,7 @@ def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list, c
     num_clusters = len(n_clusters_list)
     rows = int(np.ceil(np.sqrt(num_clusters)))  # Number of rows in the subplot grid
     cols = int(np.ceil(num_clusters / rows))  # Number of columns in the subplot grid
-    f, axes = plt.subplots(rows, cols, figsize=FIG_SIZE)  # Create subplots
+    f, axes = plt.subplots(rows, cols, figsize=(15, 15))  # Create subplots
 
     cmap = cm.get_cmap(cmap_name)  # Get the colormap
 
@@ -99,18 +92,22 @@ def plot_multiple_clusters(X: np.ndarray, models: list, n_clusters_list: list, c
         pc = model.partition_coefficient  # Partition coefficient
         pec = model.partition_entropy_coefficient  # Partition entropy coefficient
         fcm_centers = model.centers  # FCM centers
-        fcm_labels = model.predict(X)  # Predict labels
+        fcm_labels = model.predict(X) + 1  # Predict labels and start from 1
 
-        # Normalize the labels to range [0, 1] to use with cmap
-        normalized_labels = (fcm_labels - fcm_labels.min()) / (fcm_labels.max() - fcm_labels.min())
+        axe.scatter(X[:, 0], X[:, 1], c=fcm_labels, cmap=cmap, alpha=0.9)  # Plot data points
+        axe.scatter(fcm_centers[:, 0], fcm_centers[:, 1], marker="+", s=400, c="#0000ff")  # Plot centers
+        axe.set_title(f"n_clusters = {n_clusters}, PC = {pc:.3f}, PEC = {pec:.3f}")  # Set title
+        # axe.set_xticks([])  # Remove x-ticks
+        # axe.set_yticks([])  # Remove y-ticks
 
-        axe.scatter(X[:, 0], X[:, 1], c=cmap(normalized_labels), alpha=0.9)  # Plot data points
-        axe.scatter(
-            fcm_centers[:, 0], fcm_centers[:, 1], marker="+", s=200, c="r"
-        )  # Plot centers
-        axe.set_title(
-            f"n_clusters = {n_clusters}, PC = {pc:.3f}, PEC = {pec:.3f}"
-        )  # Set title
+    for j in range(len(n_clusters_list), len(axes.flatten())):
+        f.delaxes(axes.flatten()[j])  # Remove extra subplots
+
+    # Adding legend
+    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cmap(i / num_clusters), markersize=10,
+                          label=f'Cluster {i + 1}') for i in range(max(n_clusters_list))]
+    f.legend(handles=handles, loc='center right', title='Clusters')
+    plt.tight_layout()  # Adjust layout
     plt.show()  # Show plot
 
 

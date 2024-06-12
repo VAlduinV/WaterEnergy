@@ -4,11 +4,11 @@ from src.CONSTANT.constant import *
 
 
 def display_cluster_umap(
-    data: np.ndarray,
-    predicted_clusters: np.ndarray,
-    n_neighbors=15,
-    min_dist=0.1,
-    n_components=2,
+        data: np.ndarray,
+        predicted_clusters: np.ndarray,
+        n_neighbors=15,
+        min_dist=0.1,
+        n_components=2,
 ):
     """
     Apply UMAP dimensionality reduction on high-dimensional data and plot the results.
@@ -23,6 +23,7 @@ def display_cluster_umap(
     Displays:
         Scatter plot of the data reduced to two dimensions.
     """
+    predicted_clusters = predicted_clusters + 1  # Adjust cluster indices to start from 1
     reducer = umap.UMAP(
         n_neighbors=n_neighbors,
         min_dist=min_dist,
@@ -41,9 +42,10 @@ def display_cluster_umap(
         alpha=0.6,
         edgecolor="w",
     )  # Create scatter plot
-    scatter.set_title("UMAP Projection of the Clustered Data")  # Set title
+    scatter.set_title("UMAP Projection of the Clustered Data",
+                      fontdict={"family": "Times New Roman", 'fontsize': 14})  # Set title
     legend = plt.legend(
-        loc="best",
+        loc="upper right",
         title="Cluster ID",
         prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
         labelcolor="white",
@@ -54,5 +56,8 @@ def display_cluster_umap(
         facecolor="darkgrey",
         edgecolor="red",
     )  # Add legend
-    plt.setp(legend.get_title(), color="white")  # Set legend title color
+    plt.xlabel("$Component_{1}$", fontdict={"family": "Times New Roman", 'fontsize': 14})  # Set x-label
+    plt.ylabel("$Component_{2}$", fontdict={"family": "Times New Roman", 'fontsize': 14})  # Set y-label
+    # Set legend title colors
+    plt.setp(legend.get_title(), color="white")
     plt.show()  # Show plot
