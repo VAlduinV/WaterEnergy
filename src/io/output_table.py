@@ -16,3 +16,4 @@ def display_village_clusters(data, labels):
     ):  # Iterate over first 20 entries
         table.add_row([name, label])  # Add row to table
     print(table)  # Print table
+    return labels

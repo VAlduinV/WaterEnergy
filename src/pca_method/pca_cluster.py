@@ -3,8 +3,12 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
+import pandas as pd
+import matplotlib.pyplot as plt
 import seaborn as sns
-from src.CONSTANT.constant import *
+import numpy as np
+from src.CONSTANT.constant import FIG_SIZE
+import mplcyberpunk
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, required for 3D plotting
 
 
@@ -73,7 +77,7 @@ def fit_pipeline(pipeline: Pipeline, data: pd.DataFrame) -> tuple:
     pcadf = pd.DataFrame(
         preprocessed_data, columns=["component_1", "component_2"]
     )  # Create DataFrame for PCA components
-    pcadf["predicted_cluster"] = predicted_labels  # Add predicted clusters to DataFrame
+    pcadf["Labels"] = predicted_labels  # Add predicted clusters to DataFrame
 
     return pcadf, centroids  # Return DataFrame and centroids
 
@@ -92,7 +96,7 @@ def display_cluster_scatter_plot(data: pd.DataFrame, centroids: np.ndarray):
         y="component_2",
         s=50,
         data=data,
-        hue="predicted_cluster",
+        hue="Labels",
         palette="Set2",
         legend="full",
     )  # Create scatter plot

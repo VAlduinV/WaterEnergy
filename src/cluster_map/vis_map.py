@@ -1,4 +1,3 @@
-# WaterEnergy/src/cluster_map/vis_map.py
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
@@ -19,14 +18,17 @@ class MapPlotter:
 
         # Генерация цветов для кластеров
         num_clusters = villages_gdf[cluster_col].nunique()
-        colors = plt.cm.get_cmap('tab10', num_clusters)  # Использование цветовой карты
+        colors = plt.cm.get_cmap('jet', num_clusters)  # Использование цветовой карты
 
         for cluster in range(1, num_clusters + 1):
             cluster_villages = villages_gdf[villages_gdf[cluster_col] == cluster]
-            cluster_villages.plot(ax=base, marker='o', color=colors(cluster - 1), markersize=5,
-                                  label=f'Cluster {cluster}')
+            # Check if the cluster_villages GeoDataFrame is empty
+            if not cluster_villages.empty:
+                cluster_villages.plot(ax=base, marker='o', color=colors(cluster - 1), markersize=5,
+                                      label=f'Cluster {cluster}')
 
-        legend = plt.legend(title="Mapping clusters by settlements in Ukraine",
+        ax.set_aspect('equal')
+        legend = plt.legend(title="Mapping clusters\n by settlements\n in Ukraine",
                             title_fontsize=14,
                             prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
                             labelcolor="black",
@@ -38,8 +40,9 @@ class MapPlotter:
                             facecolor="white",
                             edgecolor="red",
                             )  # Add legend
-        plt.setp(legend.get_title(), color="black")  # Set legend title color)
+        plt.setp(legend.get_title(), color="black")  # Set legend title color
         plt.title(title)
+        plt.tight_layout()  # Adjust layout
         plt.savefig(output_image)
         plt.show()
 
@@ -70,4 +73,10 @@ class MapPlotter:
         geometry = [Point(xy) for xy in zip(df[lon_col], df[lat_col])]
         gdf = gpd.GeoDataFrame(df, geometry=geometry)
         gdf.crs = "EPSG:4326"  # WGS84 coordinate system
+        return gdf
+
+    def filter_regions(self, gdf, include_all=True, region_col='admin4Na_1'):
+        if not include_all:
+            exclude_regions = ['Запорізька', 'Донецька', 'Луганська', 'Херсонська', 'Автономна Республіка Крим']
+            gdf = gdf[~gdf[region_col].isin(exclude_regions)]
         return gdf

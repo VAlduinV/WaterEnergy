@@ -42,19 +42,10 @@ logging.basicConfig(
 )  # Configure logging
 
 
-def exclude_regions(df, include_all):
-    if include_all:
-        return df
-    excluded_regions = ["Запорізька", "Донецька", "Луганська", "Херсонська", "Автономна Республіка Крим"]
-    filtered_df = df[~df['admin4Na_1'].isin(excluded_regions)]
-    print(f"Filtered out regions. Remaining regions: {filtered_df['admin4Na_1'].unique()}")
-    return filtered_df
-
-
 def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
     numeric_data = selected_data[selected_columns].select_dtypes(include=[float, int])
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    cluster_labels = kmeans.fit_predict(numeric_data) + 1  # Start cluster labels from 1
+    cluster_labels = kmeans.fit_predict(numeric_data)
     print(f"Cluster labels: {cluster_labels}")
 
     scaler = StandardScaler()
@@ -85,12 +76,14 @@ def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
     return cluster_labels
 
 
-def run_pca_clustering(selected_data, n_clusters=9):
-    numeric_data = selected_data.select_dtypes(include=[float, int])
+def run_pca_clustering(selected_data, selected_columns, n_clusters=4):
+    numeric_data = selected_data[selected_columns].select_dtypes(include=[float, int])
     preprocessor, clusterer, pipe = create_pipelines(n_clusters=n_clusters)
     clustered_data, centroids = fit_pipeline(pipe, numeric_data)
     display_cluster_scatter_plot(clustered_data, centroids)
     plot_explained_variance(numeric_data)
+    print("Unique cluster labels:", clustered_data["Labels"].unique())
+    return clustered_data["Labels"]
 
 
 def run_fuzzy_clustering(selected_data, n_clusters=4):
@@ -109,7 +102,7 @@ def run_fuzzy_clustering(selected_data, n_clusters=4):
     return labels
 
 
-def main(include_all_regions=False):
+def main():
     file_path = r"src/data/VILLAGE_ok_Dist2_coord-.xlsx"
     selected_columns = [
         "RD_m1_NEAR",
@@ -124,25 +117,25 @@ def main(include_all_regions=False):
     ]
     df, selected_data = load_data(file_path, selected_columns + ["admin4Na_1"])
 
-    data_df = exclude_regions(df, include_all_regions)
-    selected_data_df = data_df[selected_columns + ["admin4Na_1", "xcoord", "ycoord"]]
-
-    # Remove rows with invalid coordinates
-    selected_data_df = selected_data_df.dropna(subset=["xcoord", "ycoord"])
-    selected_data_df = selected_data_df[(selected_data_df["xcoord"].apply(np.isfinite)) &
-                                        (selected_data_df["ycoord"].apply(np.isfinite))]
-
-    # Choose selected_data or selected_data_df
-    kmeans_labels = run_kmeans_clustering(selected_data_df, selected_columns)
-    data_df["kmeans_cluster_label"] = kmeans_labels
-    # display_village_clusters(selected_data, kmeans_labels)
+    # Choose selected_data
+    kmeans_labels = run_kmeans_clustering(selected_data, selected_columns)
+    df["kmeans_cluster_label"] = kmeans_labels
+    output_k_means = display_village_clusters(selected_data, kmeans_labels)
+    logging.info(f'Output algorithm K-means:\n {output_k_means}\n')
 
     # run_pca_clustering(selected_data)
 
-    fuzzy_labels = run_fuzzy_clustering(selected_data_df)
-    data_df["fuzzy_cluster_label"] = fuzzy_labels
+    fuzzy_labels = run_fuzzy_clustering(selected_data)
+    df["fuzzy_cluster_label"] = fuzzy_labels
+    output_c_means = display_village_clusters(selected_data, fuzzy_labels)
+    logging.info(f'Output algorithm C-means:\n {output_c_means}\n')
 
-    data_df.to_excel(file_path, index=False)
+    pca_labels = run_pca_clustering(selected_data, selected_columns)
+    df["pca_cluster_label"] = pca_labels
+    output_pca_means = display_village_clusters(selected_data, pca_labels)
+    logging.info(f'Output algorithm PCA:\n {output_pca_means}\n')
+
+    df.to_excel(file_path, index=False)
 
     logging.info(f"Obtained data:\n {df.head()}")
     logging.info(
@@ -154,13 +147,19 @@ def main(include_all_regions=False):
     map_shapefile = r'C:\Users\prime\PycharmProjects\WaterEnergy\src\data\map_data\gadm41_UKR_1.shp'
     plotter = MapPlotter(map_shapefile)
 
-    kmeans_gdf = plotter.create_village_gdf(data_df, 'xcoord', 'ycoord', 'kmeans_cluster_label')
-    plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.png', 'K-means Clustering')
-    plotter.save_clusters_to_shapefile(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.shp')
+    # Optionally filter regions
+    df = plotter.filter_regions(df, include_all=False, region_col='admin4Na_1')
 
-    fuzzy_gdf = plotter.create_village_gdf(data_df, 'xcoord', 'ycoord', 'fuzzy_cluster_label')
+    pca_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'pca_cluster_label')
+    plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', 'pca_cluster_label.png', 'PCA Clustering')
+
+    kmeans_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'kmeans_cluster_label')
+    plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.png', 'K-means Clustering')
+    # plotter.save_clusters_to_shapefile(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.shp')
+
+    fuzzy_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'fuzzy_cluster_label')
     plotter.plot_clustered_villages(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.png', 'C-means Clustering')
-    plotter.save_clusters_to_shapefile(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.shp')
+    # plotter.save_clusters_to_shapefile(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.shp')
 
 
 if __name__ == "__main__":
