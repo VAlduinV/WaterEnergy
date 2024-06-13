@@ -22,7 +22,7 @@ This project aims to perform clustering of village data using various clustering
 ## Architecture
 
 <figure>
-  <img src="/src/templates/img/UML_diagram.png" alt="Architecture project" />
+  <img src="/src/templates/img_UML/UML_diagram.png" alt="Architecture project" />
   <figcaption>Architecture project</figcaption>
 </figure>
 

@@ -58,20 +58,20 @@ def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
         "random_state": 42,
     }
 
-    # plot_elbow_curve(numeric_data, kmeans_kwargs, n_clusters, scaled_features_rate)
-    # silhouette_coefficients, optimal_k = calculate_silhouette_coefficients(
-    #    numeric_data, kmeans_kwargs, n_clusters
-    # )
-    # plot_silhouette_coefficients(silhouette_coefficients, optimal_k, n_clusters)
+    plot_elbow_curve(numeric_data, kmeans_kwargs, n_clusters, scaled_features_rate)
+    silhouette_coefficients, optimal_k = calculate_silhouette_coefficients(
+        numeric_data, kmeans_kwargs, n_clusters
+    )
+    plot_silhouette_coefficients(silhouette_coefficients, optimal_k, n_clusters)
 
     range_n_clusters = [2, 3, 4]
     markers = ["o", "s", "^", "p", "*", "d", "v", "<", ">"]
-    # perform_clustering(range_n_clusters, numeric_data, markers)
-    # perform_clustering_ing([3, 4, 6, 9], numeric_data)
+    perform_clustering(range_n_clusters, numeric_data, markers)
+    perform_clustering_ing([3, 4, 6, 9], numeric_data)
 
-    # plot_3d_clusters(numeric_data.values, n_clusters, selected_columns)
-    # evaluate_clusters_and_plot(numeric_data, n_clusters)
-    # plot_multiple_silhouettes(range_n_clusters, numeric_data)
+    plot_3d_clusters(numeric_data.values, n_clusters, selected_columns)
+    evaluate_clusters_and_plot(numeric_data, n_clusters)
+    plot_multiple_silhouettes(range_n_clusters, numeric_data)
     return cluster_labels
 
 
@@ -79,8 +79,8 @@ def run_pca_clustering(selected_data, selected_columns, n_clusters=4):
     numeric_data = selected_data[selected_columns].select_dtypes(include=[float, int])
     preprocessor, clusterer, pipe = create_pipelines(n_clusters=n_clusters)
     clustered_data, centroids = fit_pipeline(pipe, numeric_data)
-    # display_cluster_scatter_plot(clustered_data, centroids)
-    # plot_explained_variance(numeric_data)
+    display_cluster_scatter_plot(clustered_data, centroids)
+    plot_explained_variance(numeric_data)
     print("Unique cluster labels:", clustered_data["Labels"].unique())
     return clustered_data["Labels"]
 
@@ -90,14 +90,14 @@ def run_fuzzy_clustering(selected_data, n_clusters=4):
     X = preprocess_data(numeric_data)
     fcm, labels = perform_fcm_clustering(X, n_clusters)
 
-    # range_n_clusters = [2, 3, 4]
-    # models = perform_multiple_fcm_clusterings(X, range_n_clusters)
-    # plot_multiple_clusters(X, models, range_n_clusters)
+    range_n_clusters = [2, 3, 4]
+    models = perform_multiple_fcm_clusterings(X, range_n_clusters)
+    plot_multiple_clusters(X, models, range_n_clusters)
 
-    # plot_data_distribution(numeric_data)
+    plot_data_distribution(numeric_data)
     results = numeric_data.copy()
     results["Labels"] = labels
-    # plot_pairplot(results)
+    plot_pairplot(results)
     return labels
 
 
@@ -167,38 +167,51 @@ def main(use_tight_layout=True):
     logging.info(f"After filter: {df['admin4Na_1'].unique()}")
     if use_tight_layout:
         kmeans_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'kmeans_cluster_label')
-        plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.png', 'K-means Clustering')
-        plotter.save_clusters_to_shapefile(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.shp')
+        plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.png',
+                                        'K-means Clustering')
+        plotter.save_clusters_to_shapefile(kmeans_gdf, 'kmeans_cluster_label',
+                                           'src/data/map_cluster/kmeans_clusters.shp')
 
         fuzzy_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'fuzzy_cluster_label')
-        plotter.plot_clustered_villages(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.png', 'C-means Clustering')
-        plotter.save_clusters_to_shapefile(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.shp')
+        plotter.plot_clustered_villages(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.png',
+                                        'C-means Clustering')
+        plotter.save_clusters_to_shapefile(fuzzy_gdf, 'fuzzy_cluster_label',
+                                           'src/data/map_cluster/fuzzy_clusters.shp')
 
         pca_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'pca_cluster_label')
-        plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', 'pca_cluster_label.png', 'PCA Clustering')
-        plotter.save_clusters_to_shapefile(pca_gdf, 'pca_cluster_label', 'pca_clusters.shp')
+        plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', 'pca_cluster_label.png',
+                                        'PCA Clustering')
+        plotter.save_clusters_to_shapefile(pca_gdf, 'pca_cluster_label',
+                                           'src/data/map_cluster/pca_clusters.shp')
 
         umap_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'umap_cluster_label')
-        plotter.plot_clustered_villages(umap_gdf, 'umap_cluster_label', 'umap_clusters.png', 'UMAP Clustering')
-        plotter.save_clusters_to_shapefile(umap_gdf, 'umap_cluster_label', 'umap_clusters.shp')
+        plotter.plot_clustered_villages(umap_gdf, 'umap_cluster_label', 'umap_clusters.png',
+                                        'UMAP Clustering')
+        plotter.save_clusters_to_shapefile(umap_gdf, 'umap_cluster_label',
+                                           'src/data/map_cluster/umap_clusters.shp')
         plt.show()
     else:
         fig, axes = plt.subplots(2, 2, figsize=(20, 15))
 
         pca_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'pca_cluster_label')
-        plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', 'pca_clusters.png', 'PCA Clustering',
+        plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', ''
+                                                                      'src/data/map_cluster/pca_clusters.png',
+                                        'PCA Clustering',
                                         ax=axes[0, 0])
 
         kmeans_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'kmeans_cluster_label')
-        plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.png', 'K-means Clustering',
+        plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label',
+                                        'src/data/map_cluster/kmeans_clusters.png', 'K-means Clustering',
                                         ax=axes[0, 1])
 
         fuzzy_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'fuzzy_cluster_label')
-        plotter.plot_clustered_villages(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.png', 'C-means Clustering',
+        plotter.plot_clustered_villages(fuzzy_gdf, 'fuzzy_cluster_label',
+                                        'src/data/map_cluster/fuzzy_clusters.png', 'C-means Clustering',
                                         ax=axes[1, 0])
 
         umap_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'umap_cluster_label')
-        plotter.plot_clustered_villages(umap_gdf, 'umap_cluster_label', 'umap_clusters.png', 'UMAP Clustering',
+        plotter.plot_clustered_villages(umap_gdf, 'umap_cluster_label',
+                                        'src/data/map_cluster/umap_clusters.png', 'UMAP Clustering',
                                         ax=axes[1, 1])
 
         plt.tight_layout()
