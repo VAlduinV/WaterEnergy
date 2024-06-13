@@ -42,7 +42,6 @@ class MapPlotter:
                             )  # Add legend
         plt.setp(legend.get_title(), color="black")  # Set legend title color
         plt.title(title)
-        plt.tight_layout()  # Adjust layout
         plt.savefig(output_image)
         plt.show()
 
@@ -75,7 +74,7 @@ class MapPlotter:
         gdf.crs = "EPSG:4326"  # WGS84 coordinate system
         return gdf
 
-    def filter_regions(self, gdf, include_all=True, region_col='admin4Na_1'):
+    def filter_regions(self, gdf, include_all=True, region_col='admin1Na_1'):
         if not include_all:
             exclude_regions = ['Запорізька', 'Донецька', 'Луганська', 'Херсонська', 'Автономна Республіка Крим']
             gdf = gdf[~gdf[region_col].isin(exclude_regions)]

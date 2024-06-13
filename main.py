@@ -45,7 +45,7 @@ logging.basicConfig(
 def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
     numeric_data = selected_data[selected_columns].select_dtypes(include=[float, int])
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    cluster_labels = kmeans.fit_predict(numeric_data)
+    cluster_labels = kmeans.fit_predict(numeric_data) + 1
     print(f"Cluster labels: {cluster_labels}")
 
     scaler = StandardScaler()
@@ -148,10 +148,8 @@ def main():
     plotter = MapPlotter(map_shapefile)
 
     # Optionally filter regions
-    df = plotter.filter_regions(df, include_all=False, region_col='admin4Na_1')
-
-    pca_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'pca_cluster_label')
-    plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', 'pca_cluster_label.png', 'PCA Clustering')
+    df = plotter.filter_regions(df, include_all=False, region_col='admin1Na_1')
+    logging.info(f"After filter: {df['admin4Na_1'].unique()}")
 
     kmeans_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'kmeans_cluster_label')
     plotter.plot_clustered_villages(kmeans_gdf, 'kmeans_cluster_label', 'kmeans_clusters.png', 'K-means Clustering')
@@ -160,6 +158,9 @@ def main():
     fuzzy_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'fuzzy_cluster_label')
     plotter.plot_clustered_villages(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.png', 'C-means Clustering')
     # plotter.save_clusters_to_shapefile(fuzzy_gdf, 'fuzzy_cluster_label', 'fuzzy_clusters.shp')
+
+    pca_gdf = plotter.create_village_gdf(df, 'xcoord', 'ycoord', 'pca_cluster_label')
+    plotter.plot_clustered_villages(pca_gdf, 'pca_cluster_label', 'pca_cluster_label.png', 'PCA Clustering')
 
 
 if __name__ == "__main__":
