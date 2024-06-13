@@ -357,7 +357,7 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         ax.set_ylabel(selected_columns[y], fontsize=12)  # Set y-label
         ax.set_zlabel(selected_columns[z], fontsize=12)  # Set z-label
         ax.set_title(
-            f"Clusters {n_clusters} using {selected_columns[x]}, {selected_columns[y]}, {selected_columns[z]}",
+            f"Clusters {n_clusters} using {selected_columns[x]},\n {selected_columns[y]},\n {selected_columns[z]}\n",
             fontsize=14
         )  # Set title
 

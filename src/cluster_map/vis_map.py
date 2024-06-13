@@ -12,8 +12,9 @@ class MapPlotter:
         self.gdf.plot()
         plt.show()
 
-    def plot_clustered_villages(self, villages_gdf, cluster_col, output_image, title):
-        fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    def plot_clustered_villages(self, villages_gdf, cluster_col, output_image, title, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(15, 10))
         base = self.gdf.plot(ax=ax, color='white', edgecolor='black')
 
         # Генерация цветов для кластеров
@@ -28,22 +29,24 @@ class MapPlotter:
                                       label=f'Cluster {cluster}')
 
         ax.set_aspect('equal')
-        legend = plt.legend(title="Mapping clusters\n by settlements\n in Ukraine",
-                            title_fontsize=14,
-                            prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
-                            labelcolor="black",
-                            loc="best",
-                            shadow=True,
-                            frameon=True,
-                            fancybox=True,
-                            framealpha=0.8,
-                            facecolor="white",
-                            edgecolor="red",
-                            )  # Add legend
-        plt.setp(legend.get_title(), color="black")  # Set legend title color
-        plt.title(title)
-        plt.savefig(output_image)
-        plt.show()
+        legend = ax.legend(title="Mapping clusters\n by settlements\n in Ukraine",
+                           title_fontsize=14,
+                           prop={"family": "Times New Roman", "size": 14, "weight": "bold"},
+                           labelcolor="black",
+                           loc="best",
+                           shadow=True,
+                           frameon=True,
+                           fancybox=True,
+                           framealpha=0.8,
+                           facecolor="white",
+                           edgecolor="red",
+                           )  # Add legend
+        plt.setp(legend.get_title(), color="black", fontsize=14)  # Set legend title color
+        ax.set_title(title)
+        if ax is None:
+            plt.tight_layout()  # Adjust layout
+            plt.savefig(output_image)
+            plt.show()
 
     def save_clusters_to_shapefile(self, villages_gdf, cluster_col, output_file):
         """
@@ -76,6 +79,7 @@ class MapPlotter:
 
     def filter_regions(self, gdf, include_all=True, region_col='admin1Na_1'):
         if not include_all:
-            exclude_regions = ['Запорізька', 'Донецька', 'Луганська', 'Херсонська', 'Автономна Республіка Крим']
+            exclude_regions = ['Запорізька', 'Донецька', 'Луганська', 'Херсонська', 'Автономна Республіка Крим',
+                               'Севастопольська']
             gdf = gdf[~gdf[region_col].isin(exclude_regions)]
         return gdf
