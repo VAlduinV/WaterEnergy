@@ -326,7 +326,7 @@ def plot_multiple_silhouettes(range_n_clusters: list, selected_data: pd.DataFram
     plt.show()  # Показываем фигуру
 
 
-def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
+def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list, translated_labels: dict):
     """
     Plots 3D scatter plots of clustered data with different combinations of features.
 
@@ -334,6 +334,7 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         X (np.ndarray): The feature data as a numpy array.
         n_clusters (int): Number of clusters to use in KMeans.
         selected_columns (list): List of column names used for labeling the axes.
+        translated_labels (dict): Dictionary mapping original column names to new labels.
     """
     kmeans = KMeans(n_clusters=n_clusters)  # Initialize KMeans
     kmeans.fit(X)  # Fit KMeans
@@ -357,7 +358,9 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         ax.set_ylabel(selected_columns[y], fontsize=12)  # Set y-label
         ax.set_zlabel(selected_columns[z], fontsize=12)  # Set z-label
         ax.set_title(
-            f"Clusters {n_clusters} using {selected_columns[x]},\n {selected_columns[y]},\n {selected_columns[z]}\n",
+            f"Clusters {n_clusters} using {selected_columns[x]} ({translated_labels[selected_columns[x]]}),\n"
+            f"{selected_columns[y]} ({translated_labels[selected_columns[y]]}),\n"
+            f"{selected_columns[z]} ({translated_labels[selected_columns[z]]})\n",
             fontsize=14
         )  # Set title
 
@@ -377,6 +380,7 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         )
         for i in range(n_clusters)
     ]  # Create legend patches
+
     legend = plt.legend(
         handles=patches,
         bbox_to_anchor=(1.05, 1),
@@ -387,7 +391,7 @@ def plot_3d_clusters(X: np.ndarray, n_clusters: int, selected_columns: list):
         fancybox=True,
         framealpha=0.8,
         facecolor="lightgrey",
-        edgecolor="black",
+        edgecolor="black"
     )  # Add legend
     plt.setp(legend.get_title(), fontsize=12)  # Set legend title font size
     cbar = fig.colorbar(

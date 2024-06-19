@@ -60,7 +60,7 @@ def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
 
     plot_elbow_curve(numeric_data, kmeans_kwargs, n_clusters, scaled_features_rate)
     silhouette_coefficients, optimal_k = calculate_silhouette_coefficients(
-        numeric_data, kmeans_kwargs, n_clusters
+       numeric_data, kmeans_kwargs, n_clusters
     )
     plot_silhouette_coefficients(silhouette_coefficients, optimal_k, n_clusters)
 
@@ -69,7 +69,19 @@ def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
     perform_clustering(range_n_clusters, numeric_data, markers)
     perform_clustering_ing([3, 4, 6, 9], numeric_data)
 
-    plot_3d_clusters(numeric_data.values, n_clusters, selected_columns)
+    translated_labels = {
+        'RD_m1_NEAR': 'основні дороги',
+        'RD_m2_NEAR': 'другорядні дороги',
+        'RD_m3_NEAR': 'сільські дороги',
+        'CITY2_NEAR': 'великі міста',
+        'Kiyv_NEAR_': 'Київ',
+        'TOWN_NEAR_': 'районні центри',
+        'Water_NEAR': 'водні ресурси',
+        'occup_NEAR': 'окуповані території',
+        'power_NEAR': 'віддаленість від ліній електропередачі'
+    }
+
+    plot_3d_clusters(numeric_data.values, n_clusters, selected_columns, translated_labels)
     evaluate_clusters_and_plot(numeric_data, n_clusters)
     plot_multiple_silhouettes(range_n_clusters, numeric_data)
     return cluster_labels
