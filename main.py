@@ -60,7 +60,7 @@ def run_kmeans_clustering(selected_data, selected_columns, n_clusters=4):
 
     plot_elbow_curve(numeric_data, kmeans_kwargs, n_clusters, scaled_features_rate)
     silhouette_coefficients, optimal_k = calculate_silhouette_coefficients(
-       numeric_data, kmeans_kwargs, n_clusters
+      numeric_data, kmeans_kwargs, n_clusters
     )
     plot_silhouette_coefficients(silhouette_coefficients, optimal_k, n_clusters)
 
